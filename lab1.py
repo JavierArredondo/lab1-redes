@@ -1,4 +1,4 @@
-#import numpy as np # Podríamos quitar este, ya que importa todo numpy y abajo importamos lo que nos sirve
+import numpy as np
 from numpy import sin, linspace, pi
 
 from scipy.io.wavfile import read, write
@@ -10,14 +10,28 @@ import matplotlib.pyplot as plt
 #import scipy.fftpack.fftfreq
 
 """
+Laboratorio 1 de Redes de Computadores por Shalini Ramchandani & Javier Arredondo
  1. Importe la señal de audio utilizando la función read de scipy. 
  2. Grafique la función de audio en el tiempo
  3. Utilizando la transformada de fourier:
      a. Grafique la señal en el dominio de la frecuencia
      b. A la función en su frecuencia calcule la transformada de fourier inversa, compare con la señal original.
 """
-
-# Función general para graficar, a lo que retorne podemos hacerle .show()
+###################################################
+############# Definición de funciones #############
+###################################################
+"""
+Función que gráfica los datos en xdata e ydata, asignándole el valor a cada eje,
+por otro lado se le asigna un título a dicho gráfico.
+Entrada:
+    title  -> Título del gráfico
+    xlabel -> Etiqueta del eje y
+    xdata  -> Datos del eje x
+    ylabel -> Etiqueta del eje y
+    ydata  -> Datos del eje y
+Salida:
+    None
+"""
 def makeGraphic(title, xlabel, xdata, ylabel, ydata):
     plt.title(title)
     plt.xlabel(xlabel)
@@ -26,32 +40,55 @@ def makeGraphic(title, xlabel, xdata, ylabel, ydata):
     plt.savefig(title + ".png")
     return
 
+"""
+Función que gráfica el audio en dominio del tiempo. Para esto se adquiere la duración del audio (1)
+y el tiempo en segundos para cada dato en el rate (2). Posteriormente se gráfica el contenido del audio.
+Entrada:
+    data -> Son los datos obtenidos al leer el audio
+    rate -> Frecuencia de muestreo del archivo wav
+Salida:
+    None
+"""
 def timeGraphic(data, rate):
-    duration = len(data)/rate # Tiempo que dura todo el audio
-    t = linspace(0, duration, len(data)) # Intervalos de tiempo de 0 a t, generando la misma cantidad de datos que hay en data o vector tiempo
+    duration = len(data)/rate            # (1)
+    t = linspace(0, duration, len(data)) # (2)
     makeGraphic("Audio original", "Tiempo [s]", t, "Amplitud [dB]", data)
     plt.show()
     return 
 
-def freqGraphic(data, rate): 
-    fftData = fft(data)
-    fftDataReal = abs(fftData)
-    y = linspace(0, rate, len(fftDataReal))
-    makeGraphic("Audio con TFF", "Frecuencia [Hz]", y, "Amplitud [dB]", fftDataReal)
+"""
+Función que gráfica el audio en dominio de su frecuencia. Para esto es necesario calcular la transformada de fourier
+de la librería de scipy y secuencia de valores de los datos obtenidos.
+Entrada:
+    data -> Son los datos obtenidos al leer el audio
+    rate -> Frecuencia de muestreo del archivo wav
+Salida:
+    None
+"""
+def freqGraphic(data, rate):
+    sample = len(data)
+    fftData = fft(data) / sample
+    fftFreqs = np.fft.fftfreq(sample, 1/rate) # Return the Discrete Fourier Transform sample frequencies.
+    makeGraphic("Audio con FFT", "Frecuencia [Hz]", fftFreqs, "Amplitud [dB]", abs(fftData))
     plt.show()
     return fftData
 
-def ifftGraphic(data, rate, fftData): # Aquí me deje llevar, no se porqie no funciona :(
-    datas = len(data)
-    duration = datas/float(rate)
-    t = linspace(0, duration, datas)
-    ifftData = ifft(fftData, datas)
-    plt.plot(t,ifftData) #Aquí teniamos t,t -> por eso graficaba una recta :o
-    plt.title("IFFT")
-    plt.xlabel("Tiempo [s]")
-    plt.ylabel("Amplitud [dB]")
+"""
+Función que gráfica la transformada inversa del audio, por lo tanto queda en el dominio del tiempo. Para esto se utiliza la librería
+de scipy.
+Entrada:
+    data    -> Datos obtenidos del audio
+    rate    -> Frecuencia de muestreo de los datos obtenidos.
+    fftData -> Datos de la transformada de fourier del audio.
+"""
+def ifftGraphic(data, rate, fftData):
+    sample = len(data)
+    duration = sample/rate
+    t = linspace(0, duration, sample)
+    ifftData = ifft(fftData)*len(fftData)
+    makeGraphic("Audio con IFFT",  "Tiempo [s]", t, "Amplitud[dB]", ifftData)
     plt.show()
-    return
+    return ifftData
     
 
 def truncatedGraphic (data, rate, fftData):
@@ -75,6 +112,9 @@ def truncatedGraphic (data, rate, fftData):
     plt.show()
 
     return newData
+
+
+
     
 
 rate, info = read("beacon.wav")

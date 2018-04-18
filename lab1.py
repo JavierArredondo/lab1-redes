@@ -91,55 +91,81 @@ def ifftGraphic(data, rate, fftData):
     return ifftData
     
 
-def truncatedGraphic (data, rate, fftData):
-    #hallar la máxima amplitud
+def truncatedGraphic(fftData,rate):
     maximum = max(fftData)
-    #Calcular el 85% de la amplitud y dejarlo como máximo
-    maxAmp = 0.85*maximum
+    print("maximo: ",maximum)
 
-    fftDataReal = abs(fftData)
-    newData = fftDataReal
+    newData = np.zeros(len(fftData))
 
-    #Hacer un for con todos los datos
-    i = 0
-    for amplitude in newData:
-        if (amplitude > maxAmp):
-           newData[i] = maxAmp
-        i = i+1
+    index = 0
+    done = 0
+    for data in fftData:
+        if fftData[index] == maximum:
+            if done == 0:
+                done = 1
+            else:
+                maxFreq = index
+                break
+           #print("freqmax: ",maxFreq)
+        else:
+            index = index + 1    
 
-    y = linspace(0, rate, len(fftDataReal))
-    makeGraphic("Audio truncado", "Frecuencia [Hz]", y, "Amplitud [dB]", newData)
-    plt.show()
+    #print("largo: ",len(fftData))        
+    maxInterval = round(index + index*0.15)
+    minInterval = round(index - index*0.15)
 
-    return newData
+    newData[minInterval:maxInterval] = fftData[minInterval:maxInterval]
 
 
 
+
+    #print("Intervalos: ",maxInterval,minInterval)
+    # newData = []
+    # index = 0
+    # for data in fftData:
+    #     if index > minInterval and index < maxInterval:
+    #         #print("Entro1")
+    #         newData.append(fftData[index])
+    #     else:
+    #         #print("Entro2")
+    #         newData.append(0)
+    #     index = index + 1    
+
+    fftFreqs = np.fft.fftfreq(len(fftData), 1/rate) # Return the Discrete Fourier Transform sample frequencies.    
+    #y = linspace(0, rate, len(newData))
+    makeGraphic("Prueba",  "Frecuencia [Hz]", fftFreqs, "Amplitud[dB]",abs(newData))
+    plt.show()   
+        
     
 
 rate, info = read("beacon.wav")
-print("El rate es:", rate) # Frecuencia de muestreo del archivo wav
-print("La info es:", info) # Datos leídos del archivo wav
+#print("El rate es:", rate) # Frecuencia de muestreo del archivo wav
+#print("La info es:", info) # Datos leídos del archivo wav
 
 dimension = info[0].size
-print("La dimension es:", dimension) # Cantidad de muestras y el número de canales de audio
-print("Lo otro es:", info[0])
+#print("La dimension es:", dimension) # Cantidad de muestras y el número de canales de audio
+#print("Lo otro es:", info[0])
 
 if(dimension == 1): # Esto se hace para dejar el audio en un arreglo de 1 dimensión
     data = info
 else:
     data = info[:,dimension-1]
 
+#print("Rate: ",rate)
+#print("Data: ",data)
+#print("Largo: ",len(data))
 print("Graficando en dominio del tiempo")
 timeGraphic(data, rate)
 print("Graficando en dominio de la frecuencia")
 fftData = freqGraphic(data, rate)
-print("Graficando la inversa de la anterior")
+
+#print("Graficando la inversa de la anterior")
 ifftGraphic(data, rate, fftData)
 print("Graficando en dominio de frecuencia truncado")
-truncatedData = truncatedGraphic(data,rate,fftData)
-print("Graficando la inversa del truncado")
-ifftGraphic(data, rate, truncatedData)
+truncatedData = truncatedGraphic(fftData,rate)
+
+#print("Graficando la inversa del truncado")
+#ifftGraphic(data, rate, truncatedData)
 print("Listo")
 
 

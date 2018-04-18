@@ -6,6 +6,8 @@ from scipy import fft, ifft, arange
 from scipy.fftpack import fftfreq
 
 import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings('ignore')
 #import scipy.fftpack
 #import scipy.fftpack.fftfreq
 
@@ -90,25 +92,26 @@ def ifftGraphic(data, rate, fftData):
     plt.show()
     return ifftData
     
-
+"""
+Función que gráfica el truncamiento de la transformada del audio original, el cual queda en dominio de la frecuencia. Se encuentra
+la amplitud máxima y luego se trunca el 15% a la izquierda y derecha del índice de donde se encuentra tal amplitud. 
+Entrada:
+    rate    -> Frecuencia de muestreo de los datos obtenidos.
+    fftData -> Datos de la transformada de fourier del audio.
+"""
 def truncatedGraphic(fftData,rate):
     maximum = max(fftData)
-    print("maximo: ",maximum)
 
-    newData = np.zeros(len(fftData))
+    newData = np.zeros(len(fftData),np.complex256)
 
     index = 0
-    done = 0
     for data in fftData:
         if fftData[index] == maximum:
-            if done == 0:
-                done = 1
-            else:
-                maxFreq = index
-                break
+            maxFreq = index
+            break
         else:
             index = index + 1    
-        
+    
     maxInterval = round(index + index*0.15)
     minInterval = round(index - index*0.15)
 
@@ -123,13 +126,7 @@ def truncatedGraphic(fftData,rate):
     
 
 rate, info = read("beacon.wav")
-#print("El rate es:", rate) # Frecuencia de muestreo del archivo wav
-#print("La info es:", info) # Datos leídos del archivo wav
-
-dimension = info[0].size
-#print("La dimension es:", dimension) # Cantidad de muestras y el número de canales de audio
-#print("Lo otro es:", info[0])
-
+dimension = info[0].size  # Cantidad de muestras y el número de canales de audio
 if(dimension == 1): # Esto se hace para dejar el audio en un arreglo de 1 dimensión
     data = info
 else:
@@ -141,11 +138,12 @@ timeGraphic(data, rate)
 print("Graficando en dominio de la frecuencia")
 fftData = freqGraphic(data, rate)
 print("Graficando la inversa de la anterior")
-ifftGraphic(data, rate, fftData)
+hola = ifftGraphic(data, rate, fftData)
 print("Graficando en dominio de frecuencia truncado")
 truncatedData = truncatedGraphic(fftData,rate)
 print("Graficando la inversa del truncado")
-ifftGraphic(data, rate, truncatedData)
-print("Listo")
+inverseTruncated = ifftGraphic(data, rate, truncatedData)
+print("Ejecucion Terminada.")
+write("AudioTruncado.wav",rate,inverseTruncated.astype(info.dtype))
 
 

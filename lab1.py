@@ -106,35 +106,19 @@ def truncatedGraphic(fftData,rate):
             else:
                 maxFreq = index
                 break
-           #print("freqmax: ",maxFreq)
         else:
             index = index + 1    
-
-    #print("largo: ",len(fftData))        
+        
     maxInterval = round(index + index*0.15)
     minInterval = round(index - index*0.15)
 
     newData[minInterval:maxInterval] = fftData[minInterval:maxInterval]
 
-
-
-
-    #print("Intervalos: ",maxInterval,minInterval)
-    # newData = []
-    # index = 0
-    # for data in fftData:
-    #     if index > minInterval and index < maxInterval:
-    #         #print("Entro1")
-    #         newData.append(fftData[index])
-    #     else:
-    #         #print("Entro2")
-    #         newData.append(0)
-    #     index = index + 1    
-
     fftFreqs = np.fft.fftfreq(len(fftData), 1/rate) # Return the Discrete Fourier Transform sample frequencies.    
-    #y = linspace(0, rate, len(newData))
-    makeGraphic("Prueba",  "Frecuencia [Hz]", fftFreqs, "Amplitud[dB]",abs(newData))
+
+    makeGraphic("Audio con FFT truncado al 15%",  "Frecuencia [Hz]", fftFreqs, "Amplitud[dB]",abs(newData))
     plt.show()   
+    return newData
         
     
 
@@ -151,21 +135,17 @@ if(dimension == 1): # Esto se hace para dejar el audio en un arreglo de 1 dimens
 else:
     data = info[:,dimension-1]
 
-#print("Rate: ",rate)
-#print("Data: ",data)
-#print("Largo: ",len(data))
+
 print("Graficando en dominio del tiempo")
 timeGraphic(data, rate)
 print("Graficando en dominio de la frecuencia")
 fftData = freqGraphic(data, rate)
-
-#print("Graficando la inversa de la anterior")
+print("Graficando la inversa de la anterior")
 ifftGraphic(data, rate, fftData)
 print("Graficando en dominio de frecuencia truncado")
 truncatedData = truncatedGraphic(fftData,rate)
-
-#print("Graficando la inversa del truncado")
-#ifftGraphic(data, rate, truncatedData)
+print("Graficando la inversa del truncado")
+ifftGraphic(data, rate, truncatedData)
 print("Listo")
 
 
